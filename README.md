@@ -2,17 +2,13 @@
 
 ## Animl Background
 
-Islands around the world are known for their unique native species that cannot be found anywhere else. Unfortunately, the introduction of non-native invasive species by visitors to these islands poses a significant threat to these endemic species. 
+Islands around the world are known for their unique native species that cannot be found anywhere else. Unfortunately, the introduction of non-native invasive species by visitors to these islands poses a significant threat to these endemic species. To safeguard these species, The Nature Conservancy is employing various strategies, including the use of wireless camera traps and machine learning to detect invasive animal incursions in real time. The challenge is to accurately flag images that contain potential invaders while ensuring that the native species are not misidentified.
 
-## Camera Trap and Machine Learning
+## Animl and Image Classification
 
-To safeguard these species, The Nature Conservancy is employing various strategies, including the use of wireless camera traps and machine learning to detect invasive animal incursions in real time. Currently, a pilot network of wireless wildlife cameras is deployed on Santa Cruz Island, located off the southern California coast. These cameras capture images triggered by movement and transmit them to the cloud. The challenge is to accurately flag images that contain potential invaders while ensuring that the native species are not misidentified. 
+An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from AniML for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing Animl AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
 
-## AniML and Image Classification
-
-An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from AniML for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing AniML AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
-
-## Animl Classifer Training Pipeline
+## Animl Classifer Training Structure
 
 This README describes how to create a classifier for animal species using images from Santa Cruz island.
 
@@ -27,15 +23,94 @@ This README describes how to create a classifier for animal species using images
 
 #### Clone Relative GitHub Repo and Set Up Environment
 
+To create an environment, we need to clone the following repo and install prerequisites(Anaconda, Git).
+
 -[CameraTraps](https://github.com/Microsoft/cameratraps) repo
 -[microsoft/ai4eutils](https://github.com/microsoft/ai4eutils) repo
 -[animl-analytics](https://github.com/tnc-ca-geo/animl-analytics) repo
 -[animl-ml](https://github.com/tnc-ca-geo/animl-ml) repo
 
+##### Code
+
+```bash
+### install anaconda 
+wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
+bash Anaconda3-2022.10-Linux-x86_64.sh
+source .bashrc
+
+### install brew and git
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install git 
+
+### git clone relative repo
+git clone https://github.com/Microsoft/cameratraps CameraTraps
+git clone https://github.com/microsoft/ai4eutils ai4eutils
+git clone https://github.com/tnc-ca-geo/animl-analytics animl-analytics
+git clone https://github.com/tnc-ca-geo/animl-ml animl-ml
+
+### create environment
+conda create -n cameratraps-classifier
+conda env update -f ~/CameraTraps/environment-classifier.yml --prune
+
+### verifying that CUDA is available (and dealing with the case where it isn't) --parallel computing platform 
+python ~/CameraTraps/sandbox/torch_test.py
+
+"""If CUDA isn't available it would return : `CUDA available: False` and please do the following step"""
+pip uninstall torch torchvision
+conda install pytorch=1.10.1 torchvision=0.11.2 -c pytorch
+
+### Optional steps to make classification faster in Linux
+conda install -c conda-forge accimage
+pip uninstall -y pillow
+pip install pillow-simd
+
+### setting environment variables in `.bashrc`
+# Python development
+export PYTHONPATH="/path/to/repos/CameraTraps:/path/to/repos/ai4eutils"
+export MYPYPATH=$PYTHONPATH
+
+# accessing MegaDB
+export COSMOS_ENDPOINT="[INTERNAL_USE]"
+export COSMOS_KEY="[INTERNAL_USE]"
+
+# running Batch API
+export BATCH_DETECTION_API_URL="http://[INTERNAL_USE]/v3/camera-trap/detection-batch"
+export CLASSIFICATION_BLOB_STORAGE_ACCOUNT="[INTERNAL_USE]"
+export CLASSIFICATION_BLOB_CONTAINER="classifier-training"
+export CLASSIFICATION_BLOB_CONTAINER_WRITE_SAS="[INTERNAL_USE]"
+export DETECTION_API_CALLER="[INTERNAL_USE]"
+```
+
 #### Build Folder Structure
 
+Add additional directories (`~/classifier-training`, `~/images`, `~/crops`, etc.) so that the contents of your `home/` directory matches the following structure:
+
+```
+├── ai4eutils/                  # Microsoft's AI for Earth Utils repo
+├── animl-analytics/            # animl-analytics repo (utilities for exporting images)
+├── animl-ml/                   # This repo, contains Animl-specific utilities
+├── CameraTraps/                # Microsoft's CameraTraps repo
+│   ├── classification/
+│   │   ├── BASE_LOGDIR/        # classification dataset and splits
+│   │   │   └── LOGDIR/         # logs and checkpoints from a single training run
+│   ├── classifier-training/
+│   │   ├── mdcache/            # cached "MegaDetector" outputs
+│   │   │   └── v5.0b/          # NOTE: MegaDetector is in quotes because we're
+│   │   │       └── datasetX.json # also storing Animl annotations here too
+│   │   └── megaclassifier/     # files relevant to MegaClassifier
+├── crops/                      # local directory to save cropped images
+│   └── datasetX/               # images are organized by dataset
+│       └── img0___crop00.jpg
+└── images/                     # local directory to save full-size images
+    └── datasetX/               # images are organized by dataset
+        └── img0.jpg
+
+```
+
+## Training Pipeline
 
 
+## Training Pipeline
 
 Result
 ------
