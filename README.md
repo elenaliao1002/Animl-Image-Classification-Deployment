@@ -6,14 +6,16 @@ Islands around the world are known for their unique native species that cannot b
 
 ## Animl and Image Classification
 
-An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from AniML for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing Animl AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
+An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from Animl for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing Animl AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
+
+---
 
 ## Animl Classifer Training Structure
 
 This README describes how to create a classifier for animal species using images from Santa Cruz island.
 
 1. Retrieve the COCO .json file from Animl, which comprises image metadata such as filename and location, along with annotations containing label data. Please note that this JSON file does not contain the actual image files, but rather the associated metadata.
-2. Download all the full size images referenced in the cct.json(COCO) file.
+2. Download all the full size images from AWS S3 referenced in the cct.json(COCO) file.
 3. Create a classification label specification JSON file (same format that MegaDetector outputs).
 4. Implement MegaDetector to locate animals in the images and crop them out.
 5. Create classification dataset by spliting the images into 3 sets (train, val, and test).
@@ -23,12 +25,12 @@ This README describes how to create a classifier for animal species using images
 
 #### Clone Relative GitHub Repo and Set Up Environment
 
-To create an environment, we need to clone the following repo and install prerequisites(Anaconda, Git).
+To create an environment, we need to clone the following repo and install prerequisites(Anaconda, Git, aws-vault).
 
--[CameraTraps](https://github.com/Microsoft/cameratraps) repo
--[microsoft/ai4eutils](https://github.com/microsoft/ai4eutils) repo
--[animl-analytics](https://github.com/tnc-ca-geo/animl-analytics) repo
--[animl-ml](https://github.com/tnc-ca-geo/animl-ml) repo
+* [CameraTraps](https://github.com/Microsoft/cameratraps) repo
+* [microsoft/ai4eutils](https://github.com/microsoft/ai4eutils) repo
+* [animl-analytics](https://github.com/tnc-ca-geo/animl-analytics) repo
+* [animl-ml](https://github.com/tnc-ca-geo/animl-ml) repo
 
 ##### Code
 
@@ -59,6 +61,9 @@ python ~/CameraTraps/sandbox/torch_test.py
 pip uninstall torch torchvision
 conda install pytorch=1.10.1 torchvision=0.11.2 -c pytorch
 
+### install aws-vault 
+brew install aws-vault
+
 ### Optional steps to make classification faster in Linux
 conda install -c conda-forge accimage
 pip uninstall -y pillow
@@ -68,6 +73,7 @@ pip install pillow-simd
 # Python development
 export PYTHONPATH="/path/to/repos/CameraTraps:/path/to/repos/ai4eutils"
 export MYPYPATH=$PYTHONPATH
+export BASE_LOGDIR="/home/<user>/CameraTraps/classification/BASE_LOGDIR"
 
 # accessing MegaDB
 export COSMOS_ENDPOINT="[INTERNAL_USE]"
@@ -79,6 +85,24 @@ export CLASSIFICATION_BLOB_STORAGE_ACCOUNT="[INTERNAL_USE]"
 export CLASSIFICATION_BLOB_CONTAINER="classifier-training"
 export CLASSIFICATION_BLOB_CONTAINER_WRITE_SAS="[INTERNAL_USE]"
 export DETECTION_API_CALLER="[INTERNAL_USE]"
+```
+
+#### AWS Configuration
+
+To download the full size images from AWS S3 storage infrastructure, we need to do the configuration:
+
+```bash
+aws configure
+"""
+AWS Access Key ID [None]: enter your Key ID
+AWS Secret Access Key [None]: enter your Access Key
+Default region name [None]: us-west-2
+Default output format [None]: json
+"""
+
+### verify configuration settings to access credentials in files
+aws s3 ls s3://animl-images-archive-prod
+
 ```
 
 #### Build Folder Structure
@@ -107,8 +131,21 @@ Add additional directories (`~/classifier-training`, `~/images`, `~/crops`, etc.
 
 ```
 
+---
+
 ## Training Pipeline
 
+#### Exporting labeled, human-validated images and annotations from Animl
+
+In the Animl Interfece, the following filters make sense when you're exporting the data:
+
+- fox
+- bird
+- skunk
+- rodent
+- lizard
+
+Then download the data with selected labels from the Animl interface by clicking EXPORT TO COCO format. Then we get the cct.json file. Next, we can use it to download the images.
 
 ## Training Pipeline
 
