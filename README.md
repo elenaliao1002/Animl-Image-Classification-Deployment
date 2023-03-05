@@ -2,7 +2,15 @@
 
 ## Animl Background
 
-Islands around the world are known for their unique native species that cannot be found anywhere else. Unfortunately, the introduction of non-native invasive species by visitors to these islands poses a significant threat to these endemic species. To safeguard these species, The Nature Conservancy is employing various strategies, including the use of wireless camera traps and machine learning to detect invasive animal incursions in real time. Currently, a pilot network of wireless wildlife cameras is deployed on Santa Cruz Island, located off the southern California coast. These cameras capture images triggered by movement and transmit them to the cloud. The challenge is to accurately flag images that contain potential invaders while ensuring that the native species are not misidentified. An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from AniML for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing AniML AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
+Islands around the world are known for their unique native species that cannot be found anywhere else. Unfortunately, the introduction of non-native invasive species by visitors to these islands poses a significant threat to these endemic species. 
+
+## Camera Trap and Machine Learning
+
+To safeguard these species, The Nature Conservancy is employing various strategies, including the use of wireless camera traps and machine learning to detect invasive animal incursions in real time. Currently, a pilot network of wireless wildlife cameras is deployed on Santa Cruz Island, located off the southern California coast. These cameras capture images triggered by movement and transmit them to the cloud. The challenge is to accurately flag images that contain potential invaders while ensuring that the native species are not misidentified. 
+
+## AniML and Image Classification
+
+An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from AniML for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing AniML AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
 
 ## Animl Classifer Training Pipeline
 
