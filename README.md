@@ -8,8 +8,6 @@ Islands around the world are known for their unique native species that cannot b
 
 An object detection algorithm and species classification model have been implemented in Animl, an image review platform, but further tuning is necessary to differentiate between native and non-native species. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from Animl for future model training. And also retrain image classification models specifically for Santa Cruz Island and deploy the model within the existing Animl AWS infrastructure. By employing machine learning and data science, The Nature Conservancy hopes to provide real-time monitoring to various native species, including the Santa Cruz Island Fox, and mitigate the risk of invasive species.
 
----
-
 ## Animl Classifer Training Structure
 
 This README describes how to create a classifier for animal species using images from Santa Cruz island.
@@ -131,11 +129,9 @@ Add additional directories (`~/classifier-training`, `~/images`, `~/crops`, etc.
 
 ```
 
----
-
 ## Training Pipeline
 
-#### Exporting labeled, human-validated images and annotations from Animl
+#### Step1 : Exporting labeled, human-validated images and annotations from Animl
 
 In the Animl Interfece, the following filters make sense when you're exporting the data:
 
@@ -145,7 +141,34 @@ In the Animl Interfece, the following filters make sense when you're exporting t
 - rodent
 - lizard
 
-Then download the data with selected labels from the Animl interface by clicking EXPORT TO COCO format. Then we get the cct.json file. Next, we can use it to download the images.
+Then download the data with selected labels from the Animl interface by clicking EXPORT TO COCO format. Then we get the cct.json file. We can use it to download the images later on.
+
+#### Step2 : Download all the full size images referenced in the cct.json(COCO) file
+
+This code downloads image files from Amazon S3 and saves them to a local directory.
+
+The code takes two arguments: "--coco-file", the path to the coco file, and "--output-dir", the local directory to download the images to.
+
+```bash
+python ~/animl-analytics/utils/download_images.py \
+ --coco-file  ~/classifier-training/mdcache/v5.0b/<dataset_name>_cct.json\
+ --output-dir ~/images/<dataset_name>
+
+"""remember to change the dataset_name"""
+```
+
+#### Step3 : Create a classification label specification JSON file(same format that MegaDetector outputs)
+
+Create a classification label specification JSON file (usually named label_spec.json). This file defines the labels that our classifier will be trained to distinguish, as well as the original dataset labels and/or biological taxa that will map to each classification label.
+
+Some of the following steps expect the image annotations to be in the same format that MegaDetector outputs after processing a batch of images. To convert the COCO for Cameratraps file that we exported from Animl to a MegaDetector results file, navigate to the /home/studio-lab-user/ directory and run:
+
+```bash
+python animl-ml/classification/utils/cct_to_md.py \
+  --input_filename ~/classifier-training/mdcache/v5.0b/<dataset_name>_cct.json \
+  --output_filename ~/classifier-training/mdcache/v5.0b/<dataset_name>_md.json
+"""remember to change the dataset_name"""
+```
 
 ## Training Pipeline
 
