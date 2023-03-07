@@ -141,13 +141,16 @@ In the Animl Interfece, the following filters make sense when you're exporting t
 - rodent
 - lizard
 
-Then download the data with selected labels from the Animl interface by clicking EXPORT TO COCO format. Then we get the cct.json file. We can use it to download the images later on.
+Then download the data with selected labels from the Animl interface by clicking **EXPORT TO COCO** format. Then we get the cct.json file. We can use it to download the images later on.
 
 #### Step2 : Download all the full size images referenced in the cct.json(COCO) file
 
-This code downloads image files from Amazon S3 and saves them to a local directory.
+This code downloads the full size images from Amazon S3 and saves them to a local directory(or server GPU).
 
-The code takes two arguments: "--coco-file", the path to the coco file, and "--output-dir", the local directory to download the images to.
+The code takes two arguments: 
+
+* coco-file : the path to the COCO file.
+* output-dir : the local directory to download the images.
 
 ```bash
 python ~/animl-analytics/utils/download_images.py \
@@ -159,9 +162,16 @@ python ~/animl-analytics/utils/download_images.py \
 
 #### Step3 : Create a classification label specification JSON file(same format that MegaDetector outputs)
 
-Create a classification label specification JSON file (usually named label_spec.json). This file defines the labels that our classifier will be trained to distinguish, as well as the original dataset labels and/or biological taxa that will map to each classification label.
+Create a classification label specification JSON file. This file defines the labels that our classifier will be trained to distinguish, as well as the original dataset labels and/or biological taxa that will map to each classification label.
 
-Some of the following steps expect the image annotations to be in the same format that MegaDetector outputs after processing a batch of images. To convert the COCO for Cameratraps file that we exported from Animl to a MegaDetector results file, navigate to the /home/studio-lab-user/ directory and run:
+Some of the following steps expect the image annotations to be in the same format that MegaDetector outputs after processing a batch of images. 
+
+The code takes two arguments:
+
+* input_filename : the path to the COCO file.
+* output_filename : the local directory to create a classification label specification.
+
+To convert the COCO for Cameratraps file that we exported from Animl to a MegaDetector results file, navigate to the ~/ directory and run:
 
 ```bash
 python animl-ml/classification/utils/cct_to_md.py \
@@ -169,6 +179,74 @@ python animl-ml/classification/utils/cct_to_md.py \
   --output_filename ~/classifier-training/mdcache/v5.0b/<dataset_name>_md.json
 """remember to change the dataset_name"""
 ```
+
+#### Step4 : Crop images using MegaDetector
+
+Run `crop_detections.py` to crop the bounding boxes according to the detections JSON. The crops are saved to `/path/to/crops`. Unless you have a good reason not to, use the `--square-crops` flag, which crops the tightest square enclosing each bounding box (which may have an arbitrary aspect ratio).
+
+```bash
+python animl-ml/classification/utils/crop_detections.py \
+    ~/classifier-training/mdcache/v5.0b/<dataset_name>_md.json \
+    ~/crops/<dataset_name> \
+    --images-dir ~/images/<dataset_name> \
+    --threshold 0 \  # irrelevant for ground-truthed detections but we pass it in anyhow
+    --square-crops \
+    --threads 50 \
+    --logdir $BASE_LOGDIR
+"""remember to change the dataset_name"""
+```
+
+#### Step5 : Convert MegaDetector results file to queried_images.json
+
+The script `md_to_queried_images.py` is used to convert a MegaDetector output file (in JSON format) into a file that can be used as input for the next step script. It accepts three arguments:
+
+- input_filename: the path to the MegaDetector output file.
+- dataset: the name of the dataset.
+- output_filename: (optional) the filename for the output. If not provided, it will be created using the input file name.
+
+```bash
+python ~/animl-ml/classification/utils/md_to_queried_images.py \
+  --input_filename ~/classifier-training/mdcache/v5.0b/<dataset_name>_md.json \
+  --dataset <dataset_name> \
+  --output_filename $BASE_LOGDIR/queried_images.json
+"""remember to change the dataset_name"""
+```
+
+#### Step6 : Create classification dataset by spliting the datasets into 3 sets (train, val, and test)
+
+1. Takes in various arguments such as output directory, mode (to create a CSV file or splits), test set, queried images, cropped images, detector version, confidence threshold, minimum locations, validation fraction, test fraction, splits method, and label specification.
+2. It reads the object detection results and creates a CSV file with information about the dataset, the location of the object in the image, and the label of the object.
+3. The code uses the create_classification_csv function to generate a CSV file with the information about the classification dataset. This function first filters the detections based on the confidence score, minimum locations, and test set locations. Then it crops the images and saves the information in the CSV file.
+4. The code also creates a label index JSON file that contains the names of all the labels in the dataset and their indices.
+5. If the mode includes creating splits, the code uses the create_splits_random function to split the data randomly into train, validation, and test splits, or create_splits_smallest_first to split the data in the smallest first manner, based on the selected splits method.
+6. The splits information is saved in the SPLITS_FILENAME.
+7. The code uses the tqdm library to show a progress bar during the creation of the dataset.
+
+This function appears to split a dataset into training, validation, and testing sets. The splitting of the dataset into these subsets is based on either random sampling or smallest-label-first. The random sampling split is created by the create_splits_random function, while the smallest-label-first split is created by the create_splits_smallest_label_first function.
+
+In the create_splits_random function, the dataset is first merged into a single string of 'dataset/location' and then transformed into a DataFrame that has the number of images for each label and location. This DataFrame is then used to randomly generate splits of the data into training, validation, and testing sets, where the fraction of data for each set is determined by the input arguments val_frac and test_frac. A score is calculated for each split, and the split with the lowest score is chosen as the final split. The score is calculated as the sum of the squared differences between the target fraction of images for each label and the actual fraction of images for each label in each split.
+
+In the create_splits_smallest_label_first function, the dataset is first transformed into a DataFrame that has the number of images for each label and location. The DataFrame is then sorted based on the number of images for each label, and the smallest label is added to the training set first. The process of adding labels to the training set is repeated until all the labels have been added to either the training, validation, or testing set. The fraction of the data for each set is determined by the input arguments val_frac and test_frac. A label specification file can also be provided to the function through the label_spec_json_path argument, which is a JSON file that maps each label to a set (training, validation, or testing).
+
+Both functions return a dictionary with keys 'train', 'val', and 'test' that map to lists of (dataset, location) tuples, where each tuple represents an image in the dataset.
+
+```bash
+python CameraTraps/classification/create_classification_dataset.py \
+    $BASE_LOGDIR \
+    --mode csv splits \
+    --queried-images-json $BASE_LOGDIR/queried_images.json \
+    --cropped-images-dir ~/crops \
+    --detector-output-cache-dir ~/classifier-training/mdcache --detector-version 5.0b \
+    --threshold 0 \
+    --min-locs 3 \
+    --val-frac 0.2 \
+    --test-frac 0.2 \
+    --method random
+```
+
+#### Step 7: 
+
+
 
 ## Training Pipeline
 
