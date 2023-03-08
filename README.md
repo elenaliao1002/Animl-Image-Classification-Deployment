@@ -147,7 +147,7 @@ Then download the data with selected labels from the Animl interface by clicking
 
 This code downloads the full size images from Amazon S3 and saves them to a local directory(or server GPU).
 
-The code takes two arguments: 
+The code takes two arguments:
 
 * coco-file : the path to the COCO file.
 * output-dir : the local directory to download the images.
@@ -164,7 +164,7 @@ python ~/animl-analytics/utils/download_images.py \
 
 Create a classification label specification JSON file. This file defines the labels that our classifier will be trained to distinguish, as well as the original dataset labels and/or biological taxa that will map to each classification label.
 
-Some of the following steps expect the image annotations to be in the same format that MegaDetector outputs after processing a batch of images. 
+Some of the following steps expect the image annotations to be in the same format that MegaDetector outputs after processing a batch of images.
 
 The code takes two arguments:
 
@@ -244,14 +244,21 @@ python CameraTraps/classification/create_classification_dataset.py \
     --method random
 ```
 
-#### Step 7: 
+#### Step 7: Start to Train classifier
 
+```bash
+python train_classifier.py \
+    $BASE_LOGDIR \
+    ~/crops \
+    --model-name efficientnet-b3 --pretrained \
+    --label-weighted \
+    --epochs 50 --batch-size 80 --lr 3e-5 \ # I set batch-size 80 because 
+    --weight-decay 1e-6 \
+    --num-workers 4 \ 
+    --logdir $BASE_LOGDIR --log-extreme-examples 3
+```
 
-
-## Training Pipeline
-
-Result
-------
+## Analyze Result
 
 ```
 
