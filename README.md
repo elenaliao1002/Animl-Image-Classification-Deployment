@@ -214,22 +214,6 @@ python ~/animl-ml/classification/utils/md_to_queried_images.py \
 
 #### Step6 : Create classification dataset by spliting the datasets into 3 sets (train, val, and test)
 
-1. Takes in various arguments such as output directory, mode (to create a CSV file or splits), test set, queried images, cropped images, detector version, confidence threshold, minimum locations, validation fraction, test fraction, splits method, and label specification.
-2. It reads the object detection results and creates a CSV file with information about the dataset, the location of the object in the image, and the label of the object.
-3. The code uses the create_classification_csv function to generate a CSV file with the information about the classification dataset. This function first filters the detections based on the confidence score, minimum locations, and test set locations. Then it crops the images and saves the information in the CSV file.
-4. The code also creates a label index JSON file that contains the names of all the labels in the dataset and their indices.
-5. If the mode includes creating splits, the code uses the create_splits_random function to split the data randomly into train, validation, and test splits, or create_splits_smallest_first to split the data in the smallest first manner, based on the selected splits method.
-6. The splits information is saved in the SPLITS_FILENAME.
-7. The code uses the tqdm library to show a progress bar during the creation of the dataset.
-
-This function appears to split a dataset into training, validation, and testing sets. The splitting of the dataset into these subsets is based on either random sampling or smallest-label-first. The random sampling split is created by the create_splits_random function, while the smallest-label-first split is created by the create_splits_smallest_label_first function.
-
-In the create_splits_random function, the dataset is first merged into a single string of 'dataset/location' and then transformed into a DataFrame that has the number of images for each label and location. This DataFrame is then used to randomly generate splits of the data into training, validation, and testing sets, where the fraction of data for each set is determined by the input arguments val_frac and test_frac. A score is calculated for each split, and the split with the lowest score is chosen as the final split. The score is calculated as the sum of the squared differences between the target fraction of images for each label and the actual fraction of images for each label in each split.
-
-In the create_splits_smallest_label_first function, the dataset is first transformed into a DataFrame that has the number of images for each label and location. The DataFrame is then sorted based on the number of images for each label, and the smallest label is added to the training set first. The process of adding labels to the training set is repeated until all the labels have been added to either the training, validation, or testing set. The fraction of the data for each set is determined by the input arguments val_frac and test_frac. A label specification file can also be provided to the function through the label_spec_json_path argument, which is a JSON file that maps each label to a set (training, validation, or testing).
-
-Both functions return a dictionary with keys 'train', 'val', and 'test' that map to lists of (dataset, location) tuples, where each tuple represents an image in the dataset.
-
 ```bash
 python CameraTraps/classification/create_classification_dataset.py \
     $BASE_LOGDIR \
