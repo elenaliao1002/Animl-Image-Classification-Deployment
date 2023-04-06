@@ -59,6 +59,8 @@ git clone https://github.com/tnc-ca-geo/animl-ml animl-ml
 conda create -n cameratraps-classifier
 conda env update -f ~/CameraTraps/environment-classifier.yml --prune
 
+conda activate cameratraps-classifier
+
 ### verifying that CUDA is available (and dealing with the case where it isn't) --parallel computing platform 
 python ~/CameraTraps/sandbox/torch_test.py
 
