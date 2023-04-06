@@ -1,8 +1,12 @@
 # Animl
+
 Project Members: Wan-Chun Liao, [Xinyi Wang](https://github.com/XinyiWang-Jessica)
 
-Project Mentors: Kirk Klausmeyer, Natty Rindlaub, Cody Carroll
+Project Mentors: Kirk Klausmeyer, Natty Rindlaub, Cody Carroll 
 
+## Project Guideline
+
+The goal of this project is to retrain the existing Animl image classification model specifically for Santa Cruz Island and deploy the model within the existing Animl AWS infrastructure. The Nature Conservancy develop and document a pipeline for exporting labeled, human-validated images and annotations from Animl for future model training. Our labeled image data including five species fox, bird, skunk, rodent, and lizard. Implemented EfficientNet-B3 classifier to retrain the multi-class image classification models resulting in 91% average precision.
 ## Animl Background
 
 Islands around the world are known for their unique native species that cannot be found anywhere else. Unfortunately, the introduction of non-native invasive species by visitors to these islands poses a significant threat to these endemic species. To safeguard these species, The Nature Conservancy is employing various strategies, including the use of wireless camera traps and machine learning to detect invasive animal incursions in real time. The challenge is to accurately flag images that contain potential invaders while ensuring that the native species are not misidentified.
