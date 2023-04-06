@@ -234,7 +234,7 @@ python CameraTraps/classification/create_classification_dataset.py \
     $BASE_LOGDIR \
     --mode csv splits \
     --queried-images-json $BASE_LOGDIR/queried_images.json \
-    --cropped-images-dir ~/crops \
+    --cropped-images-dir ~/crops/<dataset_name> \
     --detector-output-cache-dir ~/classifier-training/mdcache --detector-version 5.0b \
     --threshold 0 \
     --min-locs 3 \
