@@ -1,4 +1,7 @@
 # Animl
+Project Members: Wan-Chun Liao, [Xinyi Wang](https://github.com/XinyiWang-Jessica)
+
+Project Mentors: Kirk Klausmeyer, Natty Rindlaub, Cody Carroll
 
 ## Animl Background
 
