@@ -169,6 +169,12 @@ python ~/animl-analytics/utils/download_images.py \
 """remember to change the dataset_name"""
 ```
 
+If there are too many images, and we want to check the process. 
+We can ran this shell code to get the number of images in the dataset folder.
+```bash 
+find ~/images/<dataset_name> -type f -name "*.jpg" | wc -l
+```
+
 #### Step3 : Create a classification label specification JSON file(same format that MegaDetector outputs)
 
 Create a classification label specification JSON file. This file defines the labels that our classifier will be trained to distinguish, as well as the original dataset labels and/or biological taxa that will map to each classification label.
