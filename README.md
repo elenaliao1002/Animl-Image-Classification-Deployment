@@ -246,7 +246,7 @@ python CameraTraps/classification/create_classification_dataset.py \
 #### Step 7: Start to Train classifier
 
 ```bash
-python train_classifier.py \
+python CameraTraps/classification/train_classifier.py \
     $BASE_LOGDIR \
     ~/crops \
     --model-name efficientnet-b3 --pretrained \
