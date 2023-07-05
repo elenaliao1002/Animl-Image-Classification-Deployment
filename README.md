@@ -257,8 +257,3 @@ python CameraTraps/classification/train_classifier.py \
     --logdir $BASE_LOGDIR --log-extreme-examples 3
 ```
 
-## Analyze Result
-
-```
-
-```
